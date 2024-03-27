@@ -1,6 +1,6 @@
 import React from 'react'
 
-const App: React.FC = () => {
+const HomePage: React.FC = () => {
   return (
     <div className="flex justify-center bg-gray-300">
       <p>Hello, world</p>
@@ -8,4 +8,4 @@ const App: React.FC = () => {
   )
 }
 
-export default App
+export default HomePage
