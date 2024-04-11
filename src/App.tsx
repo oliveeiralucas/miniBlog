@@ -12,10 +12,11 @@ import AboutPage from './pages/about/AboutPage'
 import Dashboard from './pages/dashboard/Dashboard'
 import HomePage from './pages/home/HomePage'
 import Login from './pages/login/Login'
-import Me from './pages/me/Me'
+import EditPost from './pages/post/createPost copy/EditPost'
 import CreatePost from './pages/post/createPost/CreatePost'
-import Profile from './pages/profile/Profile'
+import Post from './pages/post/Post'
 import Register from './pages/register/Register'
+import Search from './pages/search/Search'
 
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null)
@@ -39,8 +40,9 @@ const App: React.FC = () => {
             <Navbar />
             <Routes>
               <Route path="/" element={<HomePage />} />
-              <Route path="/me" element={<Me />} />
               <Route path="/about" element={<AboutPage />} />
+              <Route path="/search" element={<Search />} />
+              <Route path="/posts/:id" element={<Post />} />
               <Route
                 path="/login"
                 element={user ? <Navigate to={'/'} /> : <Login />}
@@ -55,12 +57,12 @@ const App: React.FC = () => {
                 element={!user ? <Login /> : <CreatePost />}
               />
               <Route
-                path="/dashboard"
-                element={!user ? <Login /> : <Dashboard />}
+                path="/posts/edit/:id"
+                element={user ? <Navigate to={'/login'} /> : <EditPost />}
               />
               <Route
-                path="/profile"
-                element={!user ? <Login /> : <Profile />}
+                path="/dashboard"
+                element={!user ? <Login /> : <Dashboard />}
               />
             </Routes>
             <Footer />
