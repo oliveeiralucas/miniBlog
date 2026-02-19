@@ -1,7 +1,11 @@
+from fastapi import Depends
 from fastapi import APIRouter
 from pydantic import BaseModel
+from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.prisma_client import prisma
+from app.api.deps import get_db
+from app.db.models import PostTag, Tag
 
 router = APIRouter(prefix="/tags", tags=["tags"])
 
@@ -16,18 +20,17 @@ class TagListResponse(BaseModel):
 
 
 @router.get("", response_model=TagListResponse)
-async def list_tags() -> TagListResponse:
-    """Return all tags with their respective post counts, ordered by post count desc."""
-    tags = await prisma.tag.find_many(
-        include={"_count": {"select": {"posts": True}}},  # type: ignore[arg-type]
-        order={"name": "asc"},
+async def list_tags(
+    session: AsyncSession = Depends(get_db),
+) -> TagListResponse:
+    """Return all tags with their respective post counts, ordered by name."""
+    result = await session.execute(
+        select(Tag.name, func.count(PostTag.postId).label("post_count"))
+        .outerjoin(PostTag, Tag.id == PostTag.tagId)
+        .group_by(Tag.id, Tag.name)
+        .order_by(Tag.name.asc())
     )
+    rows = result.all()
     return TagListResponse(
-        tags=[
-            TagWithCount(
-                name=tag.name,
-                postCount=tag._count.posts if tag._count else 0,  # type: ignore[union-attr]
-            )
-            for tag in tags
-        ]
+        tags=[TagWithCount(name=row.name, postCount=row.post_count) for row in rows]
     )

@@ -1,23 +1,28 @@
+from collections.abc import AsyncGenerator
+
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from jose import JWTError
-from prisma.models import User
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.security import decode_access_token
-from app.db.prisma_client import prisma
+from app.db.engine import get_session_factory
+from app.db.models import User
 from app.repositories.user_repository import UserRepository
 
 _bearer = HTTPBearer(auto_error=True)
 _optional_bearer = HTTPBearer(auto_error=False)
 
 
-async def get_db():  # type: ignore[return]
-    """Yields the application Prisma client instance."""
-    return prisma
+async def get_db() -> AsyncGenerator[AsyncSession, None]:
+    """Yield a fresh AsyncSession per request, auto-closed on completion."""
+    async with get_session_factory()() as session:
+        yield session
 
 
 async def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(_bearer),
+    session: AsyncSession = Depends(get_db),
 ) -> User:
     """Require a valid JWT Bearer token and return the authenticated User.
 
@@ -31,7 +36,7 @@ async def get_current_user(
             detail={"code": "INVALID_TOKEN", "message": "Invalid or expired access token."},
         )
 
-    user_repo = UserRepository(prisma)
+    user_repo = UserRepository(session)
     user = await user_repo.get_by_id(payload["sub"])
 
     if not user or not user.isActive:
@@ -44,6 +49,7 @@ async def get_current_user(
 
 async def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_optional_bearer),
+    session: AsyncSession = Depends(get_db),
 ) -> User | None:
     """Return the authenticated User if a valid token is present, otherwise None.
 
@@ -56,6 +62,6 @@ async def get_optional_user(
     except JWTError:
         return None
 
-    user_repo = UserRepository(prisma)
+    user_repo = UserRepository(session)
     user = await user_repo.get_by_id(payload["sub"])
     return user if user and user.isActive else None

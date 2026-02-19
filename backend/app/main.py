@@ -10,7 +10,7 @@ from app.api.v1.router import api_v1_router
 from app.core.config import get_settings
 from app.core.exceptions import register_exception_handlers
 from app.core.logging import configure_logging, get_logger
-from app.db.prisma_client import prisma
+from app.db.engine import close_engine, get_engine
 from app.middleware.cors import setup_cors
 from app.middleware.rate_limit import limiter
 from app.middleware.request_id import RequestIDMiddleware
@@ -23,11 +23,11 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):  # type: ignore[type-arg]
     """Manage application startup and shutdown lifecycle."""
     configure_logging()
-    await prisma.connect()
-    logger.info("Database connected")
+    get_engine()
+    logger.info("Database engine initialized")
     yield
-    await prisma.disconnect()
-    logger.info("Database disconnected")
+    await close_engine()
+    logger.info("Database engine disposed")
 
 
 def create_app() -> FastAPI:
@@ -36,7 +36,7 @@ def create_app() -> FastAPI:
     app = FastAPI(
         title="MiniBlog API",
         version="1.0.0",
-        description="REST API for MiniBlog — FastAPI + Prisma + PostgreSQL",
+        description="REST API for MiniBlog — FastAPI + SQLAlchemy + PostgreSQL",
         # Disable interactive docs in production
         docs_url="/docs" if settings.DEBUG else None,
         redoc_url="/redoc" if settings.DEBUG else None,

@@ -5,9 +5,7 @@ from app.schemas.comment import CommentCreate, CommentResponse
 
 
 def _to_response(comment: object) -> CommentResponse:
-    reply_count = 0
-    if hasattr(comment, "_count") and comment._count:  # type: ignore[attr-defined]
-        reply_count = comment._count.replies or 0  # type: ignore[attr-defined]
+    reply_count = getattr(comment, "reply_count", 0)
 
     return CommentResponse(
         id=comment.id,  # type: ignore[attr-defined]
