@@ -1,36 +1,130 @@
-import { useParams } from 'react-router-dom'
+import React from 'react'
+import { Link, useParams } from 'react-router-dom'
+import { BiArrowBack } from 'react-icons/bi'
 
 import { useFetchDocument } from '../../hooks/useFetchDocument'
 
-const Post = () => {
+const Post: React.FC = () => {
   const { id } = useParams()
-  const { document: post } = useFetchDocument('posts', id || '')
+  const { document: post, loading } = useFetchDocument('posts', id || '')
+
+  if (loading) {
+    return (
+      <div className="page-wrapper py-16 max-w-3xl">
+        <div className="space-y-4 animate-pulse">
+          <div className="h-3 w-24 bg-ed-elevated rounded" />
+          <div className="h-8 w-3/4 bg-ed-elevated rounded" />
+          <div className="h-8 w-1/2 bg-ed-elevated rounded" />
+          <div className="h-64 w-full bg-ed-elevated rounded mt-6" />
+          <div className="space-y-3 mt-6">
+            {[1,2,3,4,5].map(i => (
+              <div key={i} className="h-4 bg-ed-elevated rounded" style={{ width: `${80 + Math.random() * 20}%` }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!post) {
+    return (
+      <div className="page-wrapper py-20 text-center">
+        <p className="font-display text-3xl text-ed-ts mb-4">Post não encontrado</p>
+        <Link to="/" className="btn-ghost text-xs">
+          <BiArrowBack className="text-sm" />
+          Voltar ao início
+        </Link>
+      </div>
+    )
+  }
 
   return (
-    <div className="mx-auto mt-10 w-fit flex-col items-center justify-center rounded-lg border border-gray-300 p-6">
-      {post && (
-        <>
-          <h1 className="mb-4 text-3xl font-bold">{post.title}</h1>
-          <img
-            src={post.image}
-            alt={post.title}
-            className="mb-4 max-w-sm rounded-lg"
-          />
-          <p className="text-lg">{post.body}</p>
-          <h3 className="mt-6 text-xl font-semibold">Este post trata sobre:</h3>
-          <div className="mt-2 flex flex-wrap">
-            {post.tags.map((tag: string) => (
-              <span
-                key={tag}
-                className="mb-2 mr-2 rounded-full bg-gray-200 px-3 py-1 text-sm text-gray-800"
-              >
+    <article className="bg-ed-bg animate-fade-in">
+      {/* Header */}
+      <div className="border-b border-ed-border">
+        <div className="page-wrapper py-12 max-w-3xl">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-1.5 section-label hover:text-ed-accent transition-colors duration-200 mb-8"
+          >
+            <BiArrowBack className="text-sm" />
+            Voltar ao blog
+          </Link>
+
+          {/* Tags */}
+          <div className="flex flex-wrap gap-2 mb-6">
+            {post.tags?.map((tag: string) => (
+              <span key={tag} className="tag-ed">
                 #{tag}
               </span>
             ))}
           </div>
-        </>
+
+          {/* Title */}
+          <h1 className="font-display text-4xl md:text-5xl lg:text-6xl text-ed-tp leading-[1.05] mb-6">
+            {post.title}
+          </h1>
+
+          {/* Meta */}
+          <div className="flex items-center gap-3">
+            <div className="w-7 h-7 rounded-full bg-ed-accent/20 border border-ed-accent/30 flex items-center justify-center">
+              <span className="font-ui text-xs font-bold text-ed-accent">
+                {post.createdBy?.charAt(0).toUpperCase()}
+              </span>
+            </div>
+            <span className="font-ui text-xs text-ed-ts tracking-wide">
+              {post.createdBy}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Featured image */}
+      {post.image && (
+        <div className="border-b border-ed-border">
+          <div className="page-wrapper py-6 max-w-3xl">
+            <img
+              src={post.image}
+              alt={post.title}
+              className="w-full rounded-sm border border-ed-border"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+          </div>
+        </div>
       )}
-    </div>
+
+      {/* Body */}
+      <div className="page-wrapper py-12 max-w-3xl">
+        <div className="gold-line mb-8" />
+        <div className="font-body text-base md:text-lg text-ed-ts leading-[1.9] whitespace-pre-wrap">
+          {post.body}
+        </div>
+
+        {/* Tags footer */}
+        <div className="mt-12 pt-8 border-t border-ed-border">
+          <p className="section-label mb-4">Tags</p>
+          <div className="flex flex-wrap gap-2">
+            {post.tags?.map((tag: string) => (
+              <Link
+                key={tag}
+                to={`/search?q=${tag}`}
+                className="tag-ed hover:bg-ed-ad/60 transition-colors duration-200"
+              >
+                #{tag}
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Back link */}
+        <div className="mt-8">
+          <Link to="/" className="btn-ghost text-xs">
+            <BiArrowBack className="text-sm" />
+            Ver todos os posts
+          </Link>
+        </div>
+      </div>
+    </article>
   )
 }
 

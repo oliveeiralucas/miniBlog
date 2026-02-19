@@ -1,3 +1,160 @@
 @tailwind base;
-@tailwind utilities;
 @tailwind components;
+@tailwind utilities;
+
+/* ─── Base ──────────────────────────────────────────────── */
+@layer base {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #f7f5f2;
+    color: #1c1917;
+    font-family: 'Lora', Georgia, serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'DM Serif Display', Georgia, serif;
+  }
+
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: #f0ede8; }
+  ::-webkit-scrollbar-thumb { background: #d6d0c8; border-radius: 2px; }
+  ::-webkit-scrollbar-thumb:hover { background: #1e40af; }
+
+  ::selection {
+    background-color: #fef8ec;
+    color: #1e40af;
+  }
+}
+
+/* ─── Components ─────────────────────────────────────────── */
+@layer components {
+
+  .input-ed {
+    @apply w-full bg-ed-elevated border border-ed-border rounded-sm px-4 py-3
+           text-ed-tp font-ui text-sm placeholder:text-ed-tm
+           focus:outline-none focus:border-ed-accent
+           transition-colors duration-200;
+  }
+
+  .textarea-ed {
+    @apply w-full bg-ed-elevated border border-ed-border rounded-sm px-4 py-3
+           text-ed-tp font-ui text-sm placeholder:text-ed-tm
+           focus:outline-none focus:border-ed-accent
+           transition-colors duration-200 resize-none;
+  }
+
+  .btn-gold {
+    @apply inline-flex items-center justify-center gap-2
+           bg-ed-accent text-ed-bg font-ui font-bold text-sm tracking-widest uppercase
+           px-6 py-3 rounded-sm
+           hover:bg-ed-ah active:scale-[0.98]
+           transition-all duration-200 cursor-pointer;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           border border-ed-border text-ed-ts font-ui font-semibold text-sm tracking-wide
+           px-5 py-2.5 rounded-sm
+           hover:border-ed-accent hover:text-ed-accent
+           transition-all duration-200 cursor-pointer;
+  }
+
+  .btn-danger {
+    @apply inline-flex items-center justify-center gap-2
+           border border-red-900/60 text-red-400/80 font-ui font-semibold text-sm
+           px-4 py-2 rounded-sm
+           hover:border-red-500/70 hover:text-red-400
+           transition-all duration-200 cursor-pointer;
+  }
+
+  .card-ed {
+    @apply bg-ed-card border border-ed-border rounded-sm
+           transition-all duration-300
+           hover:border-ed-bl;
+  }
+
+  .tag-ed {
+    @apply inline-flex items-center gap-1
+           font-ui text-xs px-2 py-0.5 rounded-sm
+           bg-ed-ad text-ed-accent border border-ed-border;
+  }
+
+  .section-label {
+    @apply font-ui text-xs tracking-[0.2em] uppercase text-ed-tm;
+  }
+
+  .gold-line {
+    @apply w-10 h-px bg-ed-accent;
+  }
+
+  .page-wrapper {
+    @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .delay-1 { animation-delay: 100ms; }
+  .delay-2 { animation-delay: 200ms; }
+  .delay-3 { animation-delay: 300ms; }
+  .delay-4 { animation-delay: 400ms; }
+  .delay-5 { animation-delay: 500ms; }
+  .delay-6 { animation-delay: 600ms; }
+}
+
+/* ─── PrimeReact Toast dark overrides ───────────────────── */
+.p-toast { z-index: 9999 !important; }
+
+.p-toast-message {
+  background-color: #ffffff !important;
+  border: 1px solid #e4e0da !important;
+  border-left: 3px solid #1e40af !important;
+  border-radius: 2px !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.08) !important;
+}
+
+.p-toast-message-error { border-left-color: #dc2626 !important; }
+.p-toast-message-success { border-left-color: #16a34a !important; }
+.p-toast-message-warn { border-left-color: #d97706 !important; }
+
+.p-toast-message-content {
+  padding: 14px 16px !important;
+  align-items: flex-start !important;
+}
+
+.p-toast-message-icon { color: #1e40af !important; font-size: 1.25rem !important; }
+.p-toast-message-error .p-toast-message-icon { color: #dc2626 !important; }
+
+.p-toast-summary {
+  color: #1c1917 !important;
+  font-family: 'Syne', sans-serif !important;
+  font-weight: 700 !important;
+  font-size: 0.875rem !important;
+  letter-spacing: 0.04em !important;
+}
+
+.p-toast-detail {
+  color: #6b6460 !important;
+  font-family: 'Syne', sans-serif !important;
+  font-size: 0.8125rem !important;
+  margin-top: 4px !important;
+}
+
+.p-toast-icon-close {
+  color: #a8a09a !important;
+  border-radius: 2px !important;
+  transition: color 0.2s !important;
+}
+
+.p-toast-icon-close:hover {
+  color: #1c1917 !important;
+  background: transparent !important;
+}

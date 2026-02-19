@@ -1,153 +1,175 @@
-import { Button } from 'primereact/button'
-import { Chips, ChipsChangeEvent } from 'primereact/chips'
-import { InputText } from 'primereact/inputtext'
-import { InputTextarea } from 'primereact/inputtextarea'
-import React, { useState } from 'react'
-import { BiLogoBlogger } from 'react-icons/bi'
-import { useNavigate } from 'react-router-dom'
+import React, { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
+import { BiImageAlt, BiText, BiTag, BiHeading } from 'react-icons/bi'
 
+import TagInput from '@/components/TagInput'
 import { useAuthValue } from '@/context/AuthContext'
-import { useInsertDocument } from '@/hooks/useInsertDocument'
+import { useFetchDocument } from '@/hooks/useFetchDocument'
+import { useUpdateDocument } from '@/hooks/useUpdateDocument'
 
 const FormEditPost: React.FC = () => {
-  const [title, setTitle] = useState<string>('')
-  const [image, setImage] = useState<string>('')
-  const [body, setBody] = useState<string>('')
+  const { id } = useParams<{ id: string }>()
+  const { document: post, loading: loadingPost } = useFetchDocument('posts', id ?? '')
 
+  const [title, setTitle] = useState('')
+  const [image, setImage] = useState('')
+  const [body, setBody] = useState('')
   const [tags, setTags] = useState<string[]>([])
-  const [formError, setFormError] = useState<string>('')
+  const [formError, setFormError] = useState('')
 
   const authValue = useAuthValue()
   const user = authValue?.user
-
   const navigate = useNavigate()
 
-  const { insertDocument, response } = useInsertDocument('posts')
+  const { updateDocument, response } = useUpdateDocument('posts')
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Pre-fill fields when the document loads
+  useEffect(() => {
+    if (post) {
+      setTitle(post.title ?? '')
+      setImage(post.image ?? '')
+      setBody(post.body ?? '')
+      setTags(Array.isArray(post.tags) ? post.tags : [])
+    }
+  }, [post])
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setFormError('')
 
+    // Validate URL
     try {
       new URL(image)
-    } catch (error) {
-      setFormError('A imagem precisa ser uma URL')
+    } catch {
+      setFormError('A imagem precisa ser uma URL válida.')
+      return
     }
 
-    const tagsArray = tags
-      .join(',')
-      .split(',')
-      .map((tag) => tag.trim().toLowerCase())
-
-    if (!title || !image || !tags || !body) {
-      setFormError('Por favor preencha todos os campos!')
+    if (!title.trim() || !image.trim() || tags.length === 0 || !body.trim()) {
+      setFormError('Por favor preencha todos os campos.')
+      return
     }
 
-    if (formError) return
-
-    insertDocument({
-      title,
-      image,
-      body,
-      tags: tagsArray,
+    await updateDocument(id ?? '', {
+      title: title.trim(),
+      image: image.trim(),
+      body: body.trim(),
+      tags,
       uid: user?.uid,
-      createdBy: user?.displayName
+      createdBy: user?.displayName,
     })
 
-    // redirect to home page
-    navigate('/')
+    navigate('/dashboard')
+  }
+
+  if (loadingPost) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        {[1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-12 bg-ed-elevated rounded-sm" />
+        ))}
+      </div>
+    )
   }
 
   return (
-    <form
-      className="flex w-3/5 flex-col items-center justify-center rounded-3xl border border-gray-500 bg-white p-4 shadow-lg"
-      onSubmit={handleSubmit}
-    >
-      <p className="flex items-center gap-2 py-4 text-2xl font-extrabold">
-        URBlog
-        <BiLogoBlogger className="text-3xl text-blue-700" />
-      </p>
-      <div className="flex w-4/5 flex-col pt-2 text-left text-xs font-semibold sm:text-sm">
-        {/* titulo */}
-        <p className="mb-2 text-base font-semibold	tracking-wide">
-          Insira o título
-        </p>
-        <InputText
+    <form onSubmit={handleSubmit} className="space-y-6">
+      {/* Title */}
+      <div>
+        <label className="section-label flex items-center gap-1.5 mb-2">
+          <BiHeading className="text-ed-accent text-sm" />
+          Título
+        </label>
+        <input
           type="text"
-          id="title"
-          name="title"
-          placeholder="Insira o Título do post"
+          placeholder="Um título que chame atenção..."
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          className="p-2 text-gray-600 outline outline-2 outline-gray-300 placeholder:font-normal placeholder:text-gray-500"
-        />
-        {/* image */}
-        <p className="mb-2 pt-6 text-base	font-semibold tracking-wide">
-          Insira a url da imagem
-        </p>
-        <InputText
-          type="text"
-          id="image"
-          name="image"
-          placeholder="Insira a imagem do post"
-          value={image}
-          onChange={(e) => setImage(e.target.value)}
-          className="p-2 text-gray-600 outline outline-2 outline-gray-300 placeholder:font-normal placeholder:text-gray-500"
-        />{' '}
-        {/* Conteúdo */}
-        <p className="mb-2 pt-6 text-base	font-semibold tracking-wide">
-          Insira o conteúdo da postagem
-        </p>
-        <InputTextarea
-          id="body"
-          name="body"
-          placeholder="Insira o conteúdo da postagem"
-          value={body}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
-            setBody(e.target.value)
-          }
-          rows={5}
-          cols={30}
-          className="p-2 text-gray-600 outline outline-2 outline-gray-300 placeholder:font-normal placeholder:text-gray-500"
-        />
-        {/* tags */}
-        <p className="mb-2 pt-6 text-base	font-semibold tracking-wide">
-          Insira as tags
-        </p>
-        <Chips
-          id="tag"
-          name="tag"
-          placeholder="Insira as tags da postagem"
-          value={tags}
-          pt={{
-            root: { className: 'flex' },
-            container: { className: 'flex-1 text-gray-600' },
-            token: { className: 'bg-primary' }
-          }}
-          onChange={(e: ChipsChangeEvent) => {
-            if (e.value !== null && e.value !== undefined) {
-              setTags(e.value)
-            }
-          }}
-          className="w-full rounded-lg p-2 text-gray-600 outline outline-2 outline-gray-300 placeholder:text-sm placeholder:font-normal placeholder:text-gray-500"
+          required
+          className="input-ed font-display text-lg"
         />
       </div>
-      {!response.loading && (
-        <Button
-          label="Criar Post"
-          type="submit"
-          className="my-6 flex w-4/5 items-center justify-center gap-2 rounded-full border bg-blue-600 px-5 py-2.5 text-base font-semibold text-white"
+
+      {/* Image URL */}
+      <div>
+        <label className="section-label flex items-center gap-1.5 mb-2">
+          <BiImageAlt className="text-ed-accent text-sm" />
+          URL da imagem
+        </label>
+        <input
+          type="text"
+          placeholder="https://exemplo.com/imagem.jpg"
+          value={image}
+          onChange={(e) => setImage(e.target.value)}
+          required
+          className="input-ed"
         />
+        {image && (
+          <div className="mt-2 overflow-hidden rounded-sm border border-ed-border aspect-video">
+            <img
+              src={image}
+              alt="Preview"
+              className="w-full h-full object-cover"
+              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}
+            />
+          </div>
+        )}
+      </div>
+
+      {/* Body */}
+      <div>
+        <label className="section-label flex items-center gap-1.5 mb-2">
+          <BiText className="text-ed-accent text-sm" />
+          Conteúdo
+        </label>
+        <textarea
+          placeholder="Escreva o conteúdo do seu artigo..."
+          value={body}
+          onChange={(e) => setBody(e.target.value)}
+          required
+          rows={12}
+          className="textarea-ed font-body leading-relaxed"
+        />
+      </div>
+
+      {/* Tags */}
+      <div>
+        <label className="section-label flex items-center gap-1.5 mb-2">
+          <BiTag className="text-ed-accent text-sm" />
+          Tags
+        </label>
+        <TagInput
+          value={tags}
+          onChange={setTags}
+          placeholder="react, javascript, web... (Enter para adicionar)"
+        />
+        <p className="font-ui text-xs text-ed-tm mt-1.5">
+          Pressione Enter ou vírgula para adicionar cada tag
+        </p>
+      </div>
+
+      {/* Error */}
+      {(!!formError || !!response.error) && (
+        <p className="font-ui text-xs text-red-400 bg-red-900/10 border border-red-900/30 px-3 py-2 rounded-sm">
+          {formError || String(response.error)}
+        </p>
       )}
-      {response.loading && (
-        <button
-          className="my-6 flex w-4/5 items-center justify-center gap-2 rounded-full border bg-blue-600 px-5 py-2.5 text-base font-semibold text-white"
-          disabled
-        >
-          Aguarde.. .
-        </button>
-      )}
-      {(response.error || formError) && <p>{formError}</p>}
+
+      {/* Submit */}
+      <button
+        type="submit"
+        disabled={response.loading ?? false}
+        className="btn-gold w-full"
+      >
+        {response.loading ? (
+          <>
+            <div className="h-4 w-4 rounded-full border-2 border-ed-bg border-t-transparent animate-spin" />
+            Salvando...
+          </>
+        ) : (
+          'Salvar alterações'
+        )}
+      </button>
     </form>
   )
 }

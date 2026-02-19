@@ -1,24 +1,15 @@
-import { addDoc, collection, Timestamp } from 'firebase/firestore'
 import { useEffect, useReducer, useState } from 'react'
 
-import { db } from '@/firebase/config'
+import { postsApi } from '@/api/apiClient'
 import { BlogPost } from '@/interface/BlogPostData'
-import { getErrorMessage } from '@/utils/ErrorHandling'
+import { State } from '@/interface/State'
 
-interface State {
-  loading: boolean
-  error: string | null | unknown
-}
+type Action =
+  | { type: 'LOADING' }
+  | { type: 'INSERTED_DOC' }
+  | { type: 'ERROR'; payload: string }
 
-const initialState: State = {
-  loading: false,
-  error: null
-}
-
-interface Action {
-  type: string
-  payload?: unknown
-}
+const initialState: State = { loading: null, error: null }
 
 const insertReducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -33,38 +24,35 @@ const insertReducer = (state: State, action: Action): State => {
   }
 }
 
-export const useInsertDocument = (docCollection: string) => {
+/**
+ * Inserts a post via the REST API.
+ *
+ * Keeps the same public interface as the Firebase hook:
+ *   useInsertDocument(docCollection)
+ *
+ * The `docCollection` parameter is retained for compatibility but unused —
+ * all posts go to the /posts endpoint.
+ */
+export const useInsertDocument = (_docCollection: string) => {
   const [response, dispatch] = useReducer(insertReducer, initialState)
-
   const [cancelled, setCancelled] = useState<boolean>(false)
 
-  const checkCancelBeforeDispatch = (action: Action) => {
-    if (!cancelled) {
-      dispatch(action)
-    }
+  const safe = (action: Action) => {
+    if (!cancelled) dispatch(action)
   }
 
   const insertDocument = async (document: BlogPost) => {
-    checkCancelBeforeDispatch({ type: 'LOADING' })
-
+    safe({ type: 'LOADING' })
     try {
-      const newDocument = { ...document, createdAt: Timestamp.now() }
-
-      const insertedDocument = await addDoc(
-        collection(db, docCollection),
-        newDocument
-      )
-
-      checkCancelBeforeDispatch({
-        type: 'INSERTED_DOC',
-        payload: insertedDocument
+      await postsApi.create({
+        title: document.title,
+        image: document.image,
+        body: document.body,
+        tags: document.tags,
       })
-    } catch (error) {
-      const errorMessage = getErrorMessage(error)
-      checkCancelBeforeDispatch({
-        type: 'ERROR',
-        payload: errorMessage
-      })
+      safe({ type: 'INSERTED_DOC' })
+    } catch (err: any) {
+      safe({ type: 'ERROR', payload: err.message ?? 'Failed to create post' })
     }
   }
 

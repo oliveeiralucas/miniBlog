@@ -1,79 +1,67 @@
-import { Dialog, Transition } from '@headlessui/react'
-import { Fragment, ReactNode, useState } from 'react'
-import { BiSearch, BiX } from 'react-icons/bi'
+import {
+  Dialog,
+  DialogPanel,
+  Transition,
+  TransitionChild,
+} from '@headlessui/react'
+import React, { ReactNode, useState } from 'react'
+import { BiX } from 'react-icons/bi'
 
 interface ModalProps {
-  name: string
   children: ReactNode
   onClose?: () => void
 }
 
-const ModalSearch: React.FC<ModalProps> = ({ name, children, onClose }) => {
+const ModalSearch: React.FC<ModalProps> = ({ children, onClose }) => {
   const [isOpen, setIsOpen] = useState(true)
 
   function closeModal() {
     setIsOpen(false)
-    if (onClose) {
-      onClose()
-    }
+    onClose?.()
   }
 
   return (
-    <>
-      <Transition appear show={isOpen} as={Fragment}>
-        <Dialog as="div" className="relative z-10" onClose={closeModal}>
-          <Transition.Child
-            as={Fragment}
-            enter="ease-out duration-300"
-            enterFrom="opacity-0"
-            enterTo="opacity-100"
-            leave="ease-in duration-200"
-            leaveFrom="opacity-100"
-            leaveTo="opacity-0"
-          >
-            <div className="fixed inset-0 bg-black/25" />
-          </Transition.Child>
+    <Transition appear show={isOpen}>
+      <Dialog as="div" className="relative z-50" onClose={closeModal}>
+        <TransitionChild
+          enter="ease-out duration-200"
+          enterFrom="opacity-0"
+          enterTo="opacity-100"
+          leave="ease-in duration-150"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+        >
+          <div className="fixed inset-0 bg-black/70 backdrop-blur-sm" />
+        </TransitionChild>
 
-          <div className="fixed inset-0 overflow-y-auto">
-            <div className="flex min-h-full items-center justify-center p-4 text-center">
-              <Transition.Child
-                as={Fragment}
-                enter="ease-out duration-300"
-                enterFrom="opacity-0 scale-95"
-                enterTo="opacity-100 scale-100"
-                leave="ease-in duration-200"
-                leaveFrom="opacity-100 scale-100"
-                leaveTo="opacity-0 scale-95"
-              >
-                <Dialog.Panel className="w-full max-w-3xl items-center justify-center overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                  {/* Título do modal com ícone BiCalendar e botão de fechar */}
-                  <Dialog.Title
-                    as="h3"
-                    className="pb-2 text-center text-lg font-medium leading-6 text-black"
+        <div className="fixed inset-0 overflow-y-auto">
+          <div className="flex min-h-full items-start justify-center pt-24 px-4">
+            <TransitionChild
+              enter="ease-out duration-200"
+              enterFrom="opacity-0 -translate-y-4"
+              enterTo="opacity-100 translate-y-0"
+              leave="ease-in duration-150"
+              leaveFrom="opacity-100 translate-y-0"
+              leaveTo="opacity-0 -translate-y-4"
+            >
+              <DialogPanel className="w-full max-w-xl bg-ed-surface border border-ed-border rounded-sm shadow-2xl overflow-hidden">
+                <div className="flex items-center justify-between px-5 py-4 border-b border-ed-border">
+                  <span className="section-label">Pesquisar</span>
+                  <button
+                    onClick={closeModal}
+                    className="p-1.5 text-ed-tm hover:text-ed-tp border border-transparent hover:border-ed-border rounded-sm transition-all duration-200"
+                    aria-label="Fechar"
                   >
-                    {/* Ícone BiCalendar ao lado do título */}
-                    <BiSearch className="float-left mr-2 inline-block align-middle text-3xl text-blue-700" />
-                    {/* Nome do modal */}
-                    {name}
-                    {/* Botão de fechar com ícone BiX */}
-                    <button className="float-right" onClick={closeModal}>
-                      <BiX
-                        className="text-2xl text-blue-700"
-                        onClick={onClose}
-                      />
-                    </button>
-                  </Dialog.Title>
-                  {/* Linha horizontal para separar o título do corpo do modal */}
-                  <hr className="my-4"></hr>
-                  {/* Corpo do modal */}
-                  {children}
-                </Dialog.Panel>
-              </Transition.Child>
-            </div>
+                    <BiX className="text-lg" />
+                  </button>
+                </div>
+                <div className="px-5 py-5">{children}</div>
+              </DialogPanel>
+            </TransitionChild>
           </div>
-        </Dialog>
-      </Transition>
-    </>
+        </div>
+      </Dialog>
+    </Transition>
   )
 }
 

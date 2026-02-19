@@ -1,5 +1,6 @@
-import { BiPurchaseTagAlt } from 'react-icons/bi'
+import React from 'react'
 import { Link } from 'react-router-dom'
+import { BiRightArrowAlt } from 'react-icons/bi'
 
 interface Post {
   id: string
@@ -16,32 +17,53 @@ interface Props {
 
 const PostDetail: React.FC<Props> = ({ post }) => {
   return (
-    <Link to={`/posts/${post.id}`}>
-      <section className="bg-white">
-        <div className="mx-auto max-w-screen-xl p-6">
-          <article className="rounded-lg border border-gray-200 bg-white p-6 shadow-md">
-            <img className="rounded-lg" src={post.image} alt={post.title} />
-            <div className="my-3 flex items-center justify-between text-gray-500">
-              <div className="">
-                {post.tags.map((tag: string) => (
-                  <p
-                    key={tag}
-                    className="mr-4 inline-flex items-center gap-1 rounded bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800"
-                  >
-                    <BiPurchaseTagAlt />
-                    {tag}
-                  </p>
-                ))}
-              </div>
-              <span className="text-sm">{post.createdBy}</span>
-            </div>
-            <h2 className="mb-2 text-2xl font-bold tracking-tight text-gray-900 ">
-              <p>{post.title}</p>
-            </h2>
-            <p className="mb-5 font-light text-gray-500">{post.body}</p>
-          </article>
+    <Link to={`/posts/${post.id}`} className="group block">
+      <article className="card-ed card-gold-top h-full flex flex-col overflow-hidden">
+        {/* Image */}
+        <div className="overflow-hidden aspect-video bg-ed-elevated">
+          <img
+            src={post.image}
+            alt={post.title}
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              ;(e.target as HTMLImageElement).src =
+                'https://placehold.co/800x450/161616/272217?text=devlog'
+            }}
+          />
         </div>
-      </section>
+
+        {/* Content */}
+        <div className="flex flex-col flex-1 p-5 gap-3">
+          {/* Tags */}
+          <div className="flex flex-wrap gap-1.5">
+            {post.tags.slice(0, 3).map((tag) => (
+              <span key={tag} className="tag-ed">
+                #{tag}
+              </span>
+            ))}
+          </div>
+
+          {/* Title */}
+          <h2 className="font-display text-xl text-ed-tp leading-snug group-hover:text-ed-accent transition-colors duration-200 line-clamp-2">
+            {post.title}
+          </h2>
+
+          {/* Preview */}
+          <p className="font-body text-sm text-ed-ts leading-relaxed line-clamp-3 flex-1">
+            {post.body}
+          </p>
+
+          {/* Footer */}
+          <div className="flex items-center justify-between pt-3 border-t border-ed-border mt-auto">
+            <span className="font-ui text-xs text-ed-tm tracking-wider">
+              {post.createdBy}
+            </span>
+            <span className="flex items-center gap-1 font-ui text-xs text-ed-accent group-hover:gap-2 transition-all duration-200">
+              Ler <BiRightArrowAlt className="text-sm" />
+            </span>
+          </div>
+        </div>
+      </article>
     </Link>
   )
 }

@@ -1,19 +1,14 @@
-import { deleteDoc, doc } from 'firebase/firestore'
 import { useEffect, useReducer, useState } from 'react'
 
-import { db } from '@/firebase/config'
+import { postsApi } from '@/api/apiClient'
 import { State } from '@/interface/State'
-import { getErrorMessage } from '@/utils/ErrorHandling'
 
 type Action =
   | { type: 'LOADING' }
-  | { type: 'DELETED_DOC'; payload: void }
+  | { type: 'DELETED_DOC' }
   | { type: 'ERROR'; payload: string }
 
-const initialState: State = {
-  loading: null,
-  error: null
-}
+const initialState: State = { loading: null, error: null }
 
 const deleteReducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -28,33 +23,28 @@ const deleteReducer = (state: State, action: Action): State => {
   }
 }
 
-export const useDeleteDocument = (docColletion: string) => {
+/**
+ * Deletes a post via the REST API.
+ *
+ * Keeps the same public interface as the Firebase hook:
+ *   useDeleteDocument(docCollection)
+ *   deleteDocument(id)
+ */
+export const useDeleteDocument = (_docCollection: string) => {
   const [response, dispatch] = useReducer(deleteReducer, initialState)
-
   const [cancelled, setCancelled] = useState<boolean>(false)
 
-  const checkCancelBeforeDispatch = (action: Action) => {
-    if (!cancelled) {
-      dispatch(action)
-    }
+  const safe = (action: Action) => {
+    if (!cancelled) dispatch(action)
   }
 
   const deleteDocument = async (id: string) => {
-    checkCancelBeforeDispatch({ type: 'LOADING' })
-
+    safe({ type: 'LOADING' })
     try {
-      const deletedDocument = await deleteDoc(doc(db, docColletion, id))
-
-      checkCancelBeforeDispatch({
-        type: 'DELETED_DOC',
-        payload: deletedDocument
-      })
-    } catch (error) {
-      const errorMessage = getErrorMessage(error)
-      checkCancelBeforeDispatch({
-        type: 'ERROR',
-        payload: errorMessage
-      })
+      await postsApi.delete(id)
+      safe({ type: 'DELETED_DOC' })
+    } catch (err: any) {
+      safe({ type: 'ERROR', payload: err.message ?? 'Failed to delete post' })
     }
   }
 

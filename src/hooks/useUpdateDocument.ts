@@ -1,20 +1,14 @@
-import { doc, updateDoc } from 'firebase/firestore'
 import { useEffect, useReducer, useState } from 'react'
 
+import { postsApi } from '@/api/apiClient'
 import { State } from '@/interface/State'
-import { getErrorMessage } from '@/utils/ErrorHandling'
-
-import { db } from '../firebase/config'
 
 type Action =
   | { type: 'LOADING' }
-  | { type: 'UPDATED_DOC'; payload: void }
+  | { type: 'UPDATED_DOC' }
   | { type: 'ERROR'; payload: string }
 
-const initialState: State = {
-  loading: null,
-  error: null
-}
+const initialState: State = { loading: null, error: null }
 
 const updateReducer = (state: State, action: Action): State => {
   switch (action.type) {
@@ -29,38 +23,35 @@ const updateReducer = (state: State, action: Action): State => {
   }
 }
 
-export const useUpdateDocument = (docCollection: string) => {
+/**
+ * Updates a post via the REST API.
+ *
+ * Keeps the same public interface as the Firebase hook:
+ *   useUpdateDocument(docCollection)
+ *   updateDocument(id, data)
+ *
+ * Note: `uid` in the original hook referred to the document ID, not the user ID.
+ */
+export const useUpdateDocument = (_docCollection: string) => {
   const [response, dispatch] = useReducer(updateReducer, initialState)
-
-  // deal with memory leak
   const [cancelled, setCancelled] = useState<boolean>(false)
 
-  const checkCancelBeforeDispatch = (action: Action) => {
-    if (!cancelled) {
-      dispatch(action)
-    }
+  const safe = (action: Action) => {
+    if (!cancelled) dispatch(action)
   }
 
-  const updateDocument = async (uid: string, data: any) => {
-    checkCancelBeforeDispatch({ type: 'LOADING' })
-
+  const updateDocument = async (id: string, data: any) => {
+    safe({ type: 'LOADING' })
     try {
-      const docRef = await doc(db, docCollection, uid)
-
-      console.log(docRef)
-
-      const updatedDocument = await updateDoc(docRef, data)
-
-      console.log(updateDocument)
-
-      checkCancelBeforeDispatch({
-        type: 'UPDATED_DOC',
-        payload: updatedDocument
+      await postsApi.update(id, {
+        title: data.title,
+        image: data.image,
+        body: data.body,
+        tags: data.tags,
       })
-    } catch (error) {
-      const errorMessage = getErrorMessage(error)
-      console.log(error)
-      checkCancelBeforeDispatch({ type: 'ERROR', payload: errorMessage })
+      safe({ type: 'UPDATED_DOC' })
+    } catch (err: any) {
+      safe({ type: 'ERROR', payload: err.message ?? 'Failed to update post' })
     }
   }
 

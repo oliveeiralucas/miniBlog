@@ -1,83 +1,49 @@
-import {
-  collection,
-  DocumentData,
-  onSnapshot,
-  orderBy,
-  query,
-  where
-} from 'firebase/firestore'
 import { useEffect, useState } from 'react'
 
-import { getErrorMessage } from '@/utils/ErrorHandling'
+import { postsApi } from '@/api/apiClient'
+import type { ApiPost } from '@/api/types'
 
-import { db } from '../firebase/config'
-
+/**
+ * Fetches multiple posts from the REST API.
+ *
+ * Mirrors the original Firebase hook's signature:
+ *   useFetchDocuments(docCollection, search?, uid?)
+ *
+ * The `docCollection` parameter is kept for backwards compatibility but is
+ * unused — all data comes from the /posts endpoint.
+ */
 export const useFetchDocuments = (
-  docCollection: string,
+  _docCollection: string,
   search: string | null = null,
   uid: string | null = null
 ) => {
-  const [documents, setDocuments] = useState<DocumentData[]>()
+  const [documents, setDocuments] = useState<ApiPost[]>()
   const [error, setError] = useState<string>()
-  const [loading, setLoading] = useState<boolean>()
-
-  // deal with memory leak
-  const [cancelled, setCancelled] = useState<boolean>(false)
+  const [loading, setLoading] = useState<boolean>(true)
 
   useEffect(() => {
-    async function loadData() {
-      if (cancelled) {
-        return
-      }
+    let cancelled = false
 
+    const load = async () => {
       setLoading(true)
-
-      const collectionRef = await collection(db, docCollection)
-
       try {
-        let q
-
-        if (search) {
-          q = await query(
-            collectionRef,
-            where('tags', 'array-contains', search),
-            orderBy('createdAt', 'desc')
-          )
-        } else if (uid) {
-          q = await query(
-            collectionRef,
-            where('uid', '==', uid),
-            orderBy('createdAt', 'desc')
-          )
-        } else {
-          q = await query(collectionRef, orderBy('createdAt', 'desc'))
-        }
-
-        await onSnapshot(q, (querySnapshot) => {
-          setDocuments(
-            querySnapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data()
-            }))
-          )
+        const data = await postsApi.getAll({
+          q: search ?? undefined,
+          uid: uid ?? undefined,
         })
-      } catch (error) {
-        console.log(error)
-        const errorMessage = getErrorMessage(error)
-        setError(errorMessage)
+        if (!cancelled) setDocuments(data.items)
+      } catch (err: any) {
+        if (!cancelled) setError(err.message ?? 'Failed to fetch posts')
+      } finally {
+        if (!cancelled) setLoading(false)
       }
-
-      setLoading(false)
     }
 
-    loadData()
-  }, [docCollection, search, uid, cancelled])
-
-  console.log(documents)
-
-  useEffect(() => {
-    return () => setCancelled(true)
-  }, [])
+    load()
+    return () => {
+      cancelled = true
+    }
+  }, [search, uid])
 
   return { documents, loading, error }
 }

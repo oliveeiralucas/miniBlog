@@ -8,16 +8,15 @@ module.exports = {
   quoteProps: 'as-needed',
   bracketSpacing: true,
   arrowParens: 'always',
-  jsxBracketSameLine: false,
   endOfLine: 'lf',
   tailwindConfig: './tailwind.config.js',
   overrides: [
     {
       files: '.prettierrc',
       options: {
-        parser: 'json',
-      },
-    },
+        parser: 'json'
+      }
+    }
   ],
-  plugins: [require('prettier-plugin-tailwindcss')],
-};
+  plugins: ['prettier-plugin-tailwindcss']
+}

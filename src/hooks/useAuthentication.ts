@@ -1,91 +1,68 @@
-import {
-  Auth,
-  createUserWithEmailAndPassword,
-  getAuth,
-  signInWithEmailAndPassword,
-  signOut,
-  updateProfile,
-  User,
-  UserCredential
-} from 'firebase/auth'
 import { useEffect, useState } from 'react'
 
+import { accessTokenStore, authApi, tokenStorage } from '@/api/apiClient'
+import { LocalUser } from '@/context/AuthContext'
 import { UserData, UserDataLogin } from '@/interface/UserData'
-import { getErrorMessage } from '@/utils/ErrorHandling'
 
 export const useAuthentication = () => {
   const [error, setError] = useState<string>()
   const [loading, setLoading] = useState<boolean>(false)
-
-  //anti vazamento de memória
   const [cancelled, setCancelled] = useState<boolean>(false)
 
-  const auth: Auth = getAuth()
-
-  function checkIsCancelled() {
-    if (cancelled) {
-      return
-    }
+  const safeSet = <T>(setter: (v: T) => void) => (value: T) => {
+    if (!cancelled) setter(value)
   }
 
-  const createUser = async (data: UserData) => {
-    checkIsCancelled()
-
-    setLoading(true)
-
+  const createUser = async (data: UserData): Promise<LocalUser> => {
+    safeSet(setLoading)(true)
     try {
-      const userCredential: UserCredential =
-        await createUserWithEmailAndPassword(auth, data.email, data.password)
-
-      const user: User = userCredential.user
-
-      await updateProfile(user, { displayName: data.user })
-
-      setLoading(false)
-
-      return user
-    } catch (error) {
-      const errorMessage = getErrorMessage(error)
-      setError(errorMessage)
-      reportError(errorMessage)
-      setLoading(false)
-      throw error
+      const tokenData = await authApi.register({
+        displayName: data.user,
+        email: data.email,
+        password: data.password,
+      })
+      accessTokenStore.set(tokenData.accessToken)
+      tokenStorage.setRefresh(tokenData.refreshToken)
+      const apiUser = tokenData.user
+      safeSet(setLoading)(false)
+      return { id: apiUser.id, uid: apiUser.id, email: apiUser.email, displayName: apiUser.displayName }
+    } catch (err: any) {
+      const message: string = err.message ?? 'Registration failed'
+      safeSet(setError)(message)
+      safeSet(setLoading)(false)
+      throw err
     }
   }
 
-  //metodo logout
-  const logout = () => {
-    checkIsCancelled()
-    signOut(auth)
-  }
-
-  //metodo login
-  const login = async (data: UserDataLogin) => {
-    checkIsCancelled()
-
-    setLoading(true)
-
+  const login = async (data: UserDataLogin): Promise<LocalUser> => {
+    safeSet(setLoading)(true)
     try {
-      await signInWithEmailAndPassword(auth, data.user, data.password)
-    } catch (error) {
-      const errorMessage = getErrorMessage(error)
-      setError(errorMessage)
-      reportError(errorMessage)
-      throw error
+      const tokenData = await authApi.login({ email: data.user, password: data.password })
+      accessTokenStore.set(tokenData.accessToken)
+      tokenStorage.setRefresh(tokenData.refreshToken)
+      const apiUser = tokenData.user
+      safeSet(setLoading)(false)
+      return { id: apiUser.id, uid: apiUser.id, email: apiUser.email, displayName: apiUser.displayName }
+    } catch (err: any) {
+      const message: string = err.message ?? 'Login failed'
+      safeSet(setError)(message)
+      safeSet(setLoading)(false)
+      throw err
     }
-    setLoading(false)
+  }
+
+  const logout = async () => {
+    const refresh = tokenStorage.getRefresh()
+    if (refresh) {
+      await authApi.logout(refresh).catch(() => {})
+    }
+    accessTokenStore.set(null)
+    tokenStorage.clearRefresh()
   }
 
   useEffect(() => {
     return () => setCancelled(true)
   }, [])
 
-  return {
-    auth,
-    createUser,
-    error,
-    loading,
-    logout,
-    login
-  }
+  return { createUser, error, loading, logout, login }
 }
