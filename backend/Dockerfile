@@ -22,8 +22,8 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY . .
 
-# Generate Prisma client
-RUN python -m prisma generate
+# Generate Prisma client (DATABASE_URL only needed for schema validation, not for actual connection)
+RUN DATABASE_URL=postgresql://dummy:dummy@dummy:5432/dummy python -m prisma generate
 
 # Non-root user for security
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
