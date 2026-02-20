@@ -1,6 +1,8 @@
 import React, { useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { BiArrowBack, BiPencil, BiTrash } from 'react-icons/bi'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 import { postsApi } from '@/api/apiClient'
 import { useAuthValue } from '@/context/AuthContext'
@@ -138,8 +140,10 @@ const Post: React.FC = () => {
       {/* Body */}
       <div className="page-wrapper py-12 max-w-3xl">
         <div className="gold-line mb-8" />
-        <div className="font-body text-base md:text-lg text-ed-ts leading-[1.9] whitespace-pre-wrap">
-          {post.body}
+        <div className="prose prose-ed max-w-none">
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            {post.body}
+          </ReactMarkdown>
         </div>
 
         {/* Tags footer */}

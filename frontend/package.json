@@ -11,11 +11,14 @@
   },
   "dependencies": {
     "@headlessui/react": "^2.2.0",
+    "@tailwindcss/typography": "^0.5.19",
     "primereact": "^10.9.5",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-icons": "^5.4.0",
-    "react-router-dom": "^6.30.0"
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^6.30.0",
+    "remark-gfm": "^4.0.1"
   },
   "overrides": {
     "minimatch": "^10.2.1"
