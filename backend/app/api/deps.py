@@ -47,6 +47,19 @@ async def get_current_user(
     return user
 
 
+async def get_current_admin(
+    current_user: User = Depends(get_current_user),
+) -> User:
+    """Require that the authenticated user is an admin.
+
+    Raises HTTP 403 if the user is authenticated but not admin.
+    """
+    from app.core.exceptions import ForbiddenError
+    if not current_user.isAdmin:
+        raise ForbiddenError()
+    return current_user
+
+
 async def get_optional_user(
     credentials: HTTPAuthorizationCredentials | None = Depends(_optional_bearer),
     session: AsyncSession = Depends(get_db),

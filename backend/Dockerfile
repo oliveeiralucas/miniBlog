@@ -22,9 +22,8 @@ COPY --from=builder /install /usr/local
 # Copy application code
 COPY . .
 
-# Entrypoint script: creates DB tables (idempotent) then starts uvicorn
-RUN echo '#!/bin/sh\nset -e\npython scripts/init_db.py\nexec uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers ${WORKERS:-2}' \
-    > /app/entrypoint.sh && chmod +x /app/entrypoint.sh
+# Make entrypoint executable (before switching to non-root user)
+RUN chmod +x /app/entrypoint.sh
 
 # Non-root user for security
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser

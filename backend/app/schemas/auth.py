@@ -40,6 +40,7 @@ class UserResponse(BaseModel):
     id: str
     email: str
     displayName: str
+    isAdmin: bool = False
     createdAt: datetime
 
     model_config = {"from_attributes": True}

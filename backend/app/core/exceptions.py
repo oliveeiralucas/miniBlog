@@ -111,6 +111,30 @@ class EmailAlreadyExistsError(AppException):
         )
 
 
+# ─── 404 Not Found (Projects) ─────────────────────────────────────────────────
+
+
+class ProjectNotFoundError(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            status.HTTP_404_NOT_FOUND,
+            "PROJECT_NOT_FOUND",
+            "The requested project was not found.",
+        )
+
+
+# ─── 409 Conflict (Projects) ──────────────────────────────────────────────────
+
+
+class ProjectSlugTakenError(AppException):
+    def __init__(self) -> None:
+        super().__init__(
+            status.HTTP_409_CONFLICT,
+            "SLUG_TAKEN",
+            "A project with this slug already exists.",
+        )
+
+
 # ─── Exception Handlers ───────────────────────────────────────────────────────
 
 

@@ -32,6 +32,7 @@ def _user_response(user: object) -> UserResponse:
         id=user.id,  # type: ignore[attr-defined]
         email=user.email,  # type: ignore[attr-defined]
         displayName=user.displayName,  # type: ignore[attr-defined]
+        isAdmin=user.isAdmin,  # type: ignore[attr-defined]
         createdAt=user.createdAt,  # type: ignore[attr-defined]
     )
 

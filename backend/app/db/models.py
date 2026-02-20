@@ -9,6 +9,8 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     Index,
+    Integer,
+    JSON,
     String,
     Text,
     func,
@@ -33,6 +35,9 @@ class User(Base):
     passwordHash: Mapped[str] = mapped_column("password_hash", String, nullable=False)
     isActive: Mapped[bool] = mapped_column(
         "is_active", Boolean, nullable=False, default=True
+    )
+    isAdmin: Mapped[bool] = mapped_column(
+        "is_admin", Boolean, nullable=False, default=False
     )
     createdAt: Mapped[datetime] = mapped_column(
         "created_at",
@@ -267,4 +272,43 @@ class RefreshToken(Base):
         Index("ix_refresh_tokens_token_hash", "token_hash"),
         Index("ix_refresh_tokens_user_id", "user_id"),
         Index("ix_refresh_tokens_expires_at", "expires_at"),
+    )
+
+
+class Project(Base):
+    __tablename__ = "projects"
+
+    id: Mapped[str] = mapped_column(String, primary_key=True, default=new_cuid)
+    slug: Mapped[str] = mapped_column(String, unique=True, nullable=False)
+    title: Mapped[str] = mapped_column(String, nullable=False)
+    tagline: Mapped[str] = mapped_column(String, nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    category: Mapped[str] = mapped_column(String, nullable=False)
+    url: Mapped[str] = mapped_column(String, nullable=False)
+    githubUrl: Mapped[Optional[str]] = mapped_column("github_url", String, nullable=True)
+    image: Mapped[str] = mapped_column(String, nullable=False)
+    tags: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    techStack: Mapped[list] = mapped_column("tech_stack", JSON, nullable=False, default=list)
+    stats: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    features: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
+    year: Mapped[int] = mapped_column(Integer, nullable=False)
+    featured: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    createdAt: Mapped[datetime] = mapped_column(
+        "created_at",
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+    )
+    updatedAt: Mapped[datetime] = mapped_column(
+        "updated_at",
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now(),
+        onupdate=func.now(),
+    )
+
+    __table_args__ = (
+        Index("ix_projects_slug", "slug"),
+        Index("ix_projects_featured", "featured"),
+        Index("ix_projects_year", "year"),
     )
