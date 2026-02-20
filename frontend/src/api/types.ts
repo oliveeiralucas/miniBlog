@@ -4,6 +4,7 @@ export interface ApiUser {
   id: string
   email: string
   displayName: string
+  isAdmin: boolean
   createdAt: string
 }
 
@@ -94,6 +95,79 @@ export interface ApiTag {
 
 export interface TagListResponse {
   tags: ApiTag[]
+}
+
+// ─── Projects ─────────────────────────────────────────────────────────────────
+
+export interface TechStackItem {
+  name: string
+}
+
+export interface StatItem {
+  label: string
+  value: string
+}
+
+export interface ApiProject {
+  id: string
+  slug: string
+  title: string
+  tagline: string
+  description: string
+  category: string
+  url: string
+  githubUrl: string | null
+  image: string
+  tags: string[]
+  techStack: TechStackItem[]
+  stats: StatItem[]
+  features: string[]
+  year: number
+  featured: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProjectCreatePayload {
+  slug: string
+  title: string
+  tagline: string
+  description: string
+  category: string
+  url: string
+  githubUrl?: string
+  image: string
+  tags: string[]
+  techStack: TechStackItem[]
+  stats: StatItem[]
+  features: string[]
+  year: number
+  featured: boolean
+}
+
+export interface ProjectUpdatePayload {
+  slug?: string
+  title?: string
+  tagline?: string
+  description?: string
+  category?: string
+  url?: string
+  githubUrl?: string | null
+  image?: string
+  tags?: string[]
+  techStack?: TechStackItem[]
+  stats?: StatItem[]
+  features?: string[]
+  year?: number
+  featured?: boolean
+}
+
+export interface PaginatedProjects {
+  items: ApiProject[]
+  total: number
+  page: number
+  size: number
+  pages: number
 }
 
 // ─── Errors ───────────────────────────────────────────────────────────────────

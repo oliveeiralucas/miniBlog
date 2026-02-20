@@ -41,7 +41,7 @@ export const useInsertDocument = (_docCollection: string) => {
     if (!cancelled) dispatch(action)
   }
 
-  const insertDocument = async (document: BlogPost) => {
+  const insertDocument = async (document: BlogPost): Promise<boolean> => {
     safe({ type: 'LOADING' })
     try {
       await postsApi.create({
@@ -51,8 +51,10 @@ export const useInsertDocument = (_docCollection: string) => {
         tags: document.tags,
       })
       safe({ type: 'INSERTED_DOC' })
+      return true
     } catch (err: any) {
       safe({ type: 'ERROR', payload: err.message ?? 'Failed to create post' })
+      return false
     }
   }
 

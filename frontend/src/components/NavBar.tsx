@@ -61,10 +61,13 @@ const Navbar: React.FC = () => {
           <nav className="hidden md:flex items-center gap-8">
             <NavLink to="/" className={navLinkClass('/')}>Home</NavLink>
             <NavLink to="/about" className={navLinkClass('/about')}>Sobre</NavLink>
+            <NavLink to="/portfolio" className={navLinkClass('/portfolio')}>Portfólio</NavLink>
             {user && (
               <>
                 <NavLink to="/dashboard" className={navLinkClass('/dashboard')}>Dashboard</NavLink>
-                <NavLink to="/post/create" className={navLinkClass('/post/create')}>Escrever</NavLink>
+                {user.isAdmin && (
+                  <NavLink to="/post/create" className={navLinkClass('/post/create')}>Escrever</NavLink>
+                )}
               </>
             )}
           </nav>
@@ -122,10 +125,17 @@ const Navbar: React.FC = () => {
                 className={navLinkClass('/about')}
                 onClick={() => setMobileOpen(false)}
               >Sobre</NavLink>
+              <NavLink
+                to="/portfolio"
+                className={navLinkClass('/portfolio')}
+                onClick={() => setMobileOpen(false)}
+              >Portfólio</NavLink>
               {user && (
                 <>
                   <NavLink to="/dashboard" className={navLinkClass('/dashboard')} onClick={() => setMobileOpen(false)}>Dashboard</NavLink>
-                  <NavLink to="/post/create" className={navLinkClass('/post/create')} onClick={() => setMobileOpen(false)}>Escrever</NavLink>
+                  {user.isAdmin && (
+                    <NavLink to="/post/create" className={navLinkClass('/post/create')} onClick={() => setMobileOpen(false)}>Escrever</NavLink>
+                  )}
                 </>
               )}
               <div className="pt-2 border-t border-ed-border flex items-center gap-3">

@@ -25,7 +25,7 @@ export const useAuthentication = () => {
       tokenStorage.setRefresh(tokenData.refreshToken)
       const apiUser = tokenData.user
       safeSet(setLoading)(false)
-      return { id: apiUser.id, uid: apiUser.id, email: apiUser.email, displayName: apiUser.displayName }
+      return { id: apiUser.id, uid: apiUser.id, email: apiUser.email, displayName: apiUser.displayName, isAdmin: apiUser.isAdmin ?? false }
     } catch (err: any) {
       const message: string = err.message ?? 'Registration failed'
       safeSet(setError)(message)
@@ -42,7 +42,7 @@ export const useAuthentication = () => {
       tokenStorage.setRefresh(tokenData.refreshToken)
       const apiUser = tokenData.user
       safeSet(setLoading)(false)
-      return { id: apiUser.id, uid: apiUser.id, email: apiUser.email, displayName: apiUser.displayName }
+      return { id: apiUser.id, uid: apiUser.id, email: apiUser.email, displayName: apiUser.displayName, isAdmin: apiUser.isAdmin ?? false }
     } catch (err: any) {
       const message: string = err.message ?? 'Login failed'
       safeSet(setError)(message)

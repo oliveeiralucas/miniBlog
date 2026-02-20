@@ -1,12 +1,30 @@
-import React from 'react'
-import { Link, useParams } from 'react-router-dom'
-import { BiArrowBack } from 'react-icons/bi'
+import React, { useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import { BiArrowBack, BiPencil, BiTrash } from 'react-icons/bi'
 
+import { postsApi } from '@/api/apiClient'
+import { useAuthValue } from '@/context/AuthContext'
 import { useFetchDocument } from '../../hooks/useFetchDocument'
 
 const Post: React.FC = () => {
   const { id } = useParams()
   const { document: post, loading } = useFetchDocument('posts', id || '')
+  const { user } = useAuthValue()
+  const navigate = useNavigate()
+  const [deleting, setDeleting] = useState(false)
+
+  const handleDelete = async () => {
+    if (!post || !confirm(`Excluir "${post.title}"? Esta ação não pode ser desfeita.`)) return
+    setDeleting(true)
+    try {
+      await postsApi.delete(post.id)
+      navigate('/')
+    } catch {
+      // silencioso — erro raro
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -76,6 +94,30 @@ const Post: React.FC = () => {
               {post.createdBy}
             </span>
           </div>
+
+          {/* Admin actions */}
+          {user?.isAdmin && (
+            <div className="flex items-center gap-2 mt-6">
+              <Link
+                to={`/posts/edit/${post.id}`}
+                className="btn-ghost text-xs"
+              >
+                <BiPencil className="text-sm" /> Editar
+              </Link>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="btn-ghost text-xs text-red-400 hover:border-red-900/40 disabled:opacity-40"
+              >
+                {deleting ? (
+                  <div className="h-3.5 w-3.5 border border-red-400 border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <BiTrash className="text-sm" />
+                )}
+                {deleting ? 'Excluindo...' : 'Excluir'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

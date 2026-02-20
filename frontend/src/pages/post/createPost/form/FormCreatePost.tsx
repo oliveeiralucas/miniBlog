@@ -19,7 +19,7 @@ const FormCreatePost: React.FC = () => {
 
   const { insertDocument, response } = useInsertDocument('posts')
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setFormError('')
 
@@ -36,7 +36,7 @@ const FormCreatePost: React.FC = () => {
       return
     }
 
-    insertDocument({
+    const ok = await insertDocument({
       title: title.trim(),
       image: image.trim(),
       body: body.trim(),
@@ -45,7 +45,7 @@ const FormCreatePost: React.FC = () => {
       createdBy: user?.displayName,
     })
 
-    navigate('/')
+    if (ok) navigate('/')
   }
 
   return (

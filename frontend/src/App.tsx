@@ -6,11 +6,14 @@ import Footer from './components/Footer'
 import Navbar from './components/NavBar'
 import { AuthProvider, LocalUser } from './context/AuthContext'
 import AboutPage from './pages/about/AboutPage'
+import ProjectFormPage from './pages/admin/projects/ProjectFormPage'
 import ContactPage from './pages/contact/ContactPage'
 import Dashboard from './pages/dashboard/Dashboard'
 import ErrorPage from './pages/error/ErrorPage'
 import HomePage from './pages/home/HomePage'
 import Login from './pages/login/Login'
+import PortfolioPage from './pages/portfolio/PortfolioPage'
+import ProjectDetailPage from './pages/portfolio/ProjectDetailPage'
 import EditPost from './pages/post/createPost copy/EditPost'
 import CreatePost from './pages/post/createPost/CreatePost'
 import Post from './pages/post/Post'
@@ -42,6 +45,7 @@ const App: React.FC = () => {
           uid: apiUser.id,
           email: apiUser.email,
           displayName: apiUser.displayName,
+          isAdmin: apiUser.isAdmin ?? false,
         })
       })
       .catch(() => {
@@ -96,6 +100,16 @@ const App: React.FC = () => {
               <Route
                 path="/dashboard"
                 element={!user ? <Login /> : <Dashboard />}
+              />
+              <Route path="/portfolio" element={<PortfolioPage />} />
+              <Route path="/portfolio/:slug" element={<ProjectDetailPage />} />
+              <Route
+                path="/admin/projects/new"
+                element={!user?.isAdmin ? <Navigate to="/" /> : <ProjectFormPage />}
+              />
+              <Route
+                path="/admin/projects/edit/:slug"
+                element={!user?.isAdmin ? <Navigate to="/" /> : <ProjectFormPage />}
               />
               <Route path="/contact" element={<ContactPage />} />
               <Route path="/terms" element={<TermsPage />} />

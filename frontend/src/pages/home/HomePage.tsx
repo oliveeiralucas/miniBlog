@@ -29,8 +29,15 @@ const HomePage: React.FC = () => {
   return (
     <div className="bg-ed-bg">
       {/* Hero */}
-      <section className="border-b border-ed-border">
-        <div className="page-wrapper py-20 md:py-28">
+      <section className="border-b border-ed-border relative overflow-hidden">
+        <img
+          src="https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1920&h=800&fit=crop&auto=format"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 w-full h-full object-cover opacity-10"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-ed-bg via-ed-bg/90 to-ed-bg/50" />
+        <div className="page-wrapper py-20 md:py-28 relative">
           <div className="max-w-2xl animate-fade-up">
             <p className="section-label mb-5">Lucas Oliveira · Dev Blog</p>
             <div className="gold-line mb-8" />

@@ -1,12 +1,16 @@
 import type {
   ApiComment,
   ApiPost,
+  ApiProject,
   ApiTag,
   CommentCreatePayload,
   LoginPayload,
   PaginatedPosts,
+  PaginatedProjects,
   PostCreatePayload,
   PostUpdatePayload,
+  ProjectCreatePayload,
+  ProjectUpdatePayload,
   RegisterPayload,
   TagListResponse,
   TokenResponse,
@@ -63,8 +67,13 @@ async function request<T>(
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({ code: 'UNKNOWN', message: res.statusText }))
-    const err = new Error(body.message ?? 'Request failed')
-    ;(err as any).code = body.code
+    let message: string = body.message
+    if (!message && Array.isArray(body.detail)) {
+      // Pydantic validation error: { detail: [{loc, msg, type}] }
+      message = body.detail.map((e: any) => e.msg).join('; ')
+    }
+    const err = new Error(message ?? 'Request failed')
+    ;(err as any).code = body.code ?? 'UNKNOWN'
     ;(err as any).status = res.status
     throw err
   }
@@ -181,4 +190,34 @@ export const commentsApi = {
 export const tagsApi = {
   getAll: (): Promise<ApiTag[]> =>
     request<TagListResponse>('/tags').then((r) => r.tags),
+}
+
+// ─── Projects endpoints ───────────────────────────────────────────────────────
+
+export const projectsApi = {
+  getAll: (params?: { featured?: boolean; page?: number; size?: number }) => {
+    const qs = new URLSearchParams()
+    if (params?.featured) qs.set('featured', 'true')
+    if (params?.page) qs.set('page', String(params.page))
+    if (params?.size) qs.set('size', String(params.size))
+    const query = qs.toString() ? `?${qs.toString()}` : ''
+    return request<PaginatedProjects>(`/projects${query}`)
+  },
+
+  getBySlug: (slug: string) => request<ApiProject>(`/projects/${slug}`),
+
+  create: (payload: ProjectCreatePayload) =>
+    request<ApiProject>('/projects', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  update: (id: string, payload: ProjectUpdatePayload) =>
+    request<ApiProject>(`/projects/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    }),
+
+  delete: (id: string): Promise<void> =>
+    request<void>(`/projects/${id}`, { method: 'DELETE' }),
 }
