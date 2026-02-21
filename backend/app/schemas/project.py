@@ -4,7 +4,7 @@ import re
 from datetime import datetime
 from typing import Any
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 
 
 class TechStackItem(BaseModel):
@@ -24,13 +24,20 @@ class ProjectCreate(BaseModel):
     category: str
     url: str
     githubUrl: str | None = None
-    image: str
+    image: str = ""
+    image_data: str | None = None
     tags: list[str] = []
     techStack: list[TechStackItem] = []
     stats: list[StatItem] = []
     features: list[str] = []
     year: int
     featured: bool = False
+
+    @model_validator(mode="after")
+    def check_image_source(self) -> "ProjectCreate":
+        if not self.image and not self.image_data:
+            raise ValueError("Either 'image' (URL) or 'image_data' (base64) must be provided")
+        return self
 
     @field_validator("slug")
     @classmethod
@@ -63,6 +70,7 @@ class ProjectUpdate(BaseModel):
     url: str | None = None
     githubUrl: str | None = None
     image: str | None = None
+    image_data: str | None = None
     tags: list[str] | None = None
     techStack: list[TechStackItem] | None = None
     stats: list[StatItem] | None = None
@@ -95,6 +103,7 @@ class ProjectResponse(BaseModel):
     url: str
     githubUrl: str | None
     image: str
+    image_data: str | None = None
     tags: list[str]
     techStack: list[dict[str, Any]]
     stats: list[dict[str, Any]]

@@ -46,6 +46,7 @@ export const useUpdateDocument = (_docCollection: string) => {
       await postsApi.update(id, {
         title: data.title,
         image: data.image,
+        image_data: data.image_data,
         body: data.body,
         tags: data.tags,
       })

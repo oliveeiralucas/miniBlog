@@ -32,7 +32,7 @@ const ProjectCard: React.FC<{ project: ApiProject }> = ({ project }) => (
     <article className="card-ed overflow-hidden h-full flex flex-col">
       <div className="overflow-hidden aspect-video bg-ed-elevated relative">
         <img
-          src={project.image}
+          src={project.image_data ? `data:image/png;base64,${project.image_data}` : project.image}
           alt={project.title}
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           onError={(e) => {

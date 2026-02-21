@@ -75,6 +75,7 @@ class Post(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True, default=new_cuid)
     title: Mapped[str] = mapped_column(String, nullable=False)
     image: Mapped[str] = mapped_column(String, nullable=False)
+    image_data: Mapped[Optional[str]] = mapped_column("image_data", Text, nullable=True)
     body: Mapped[str] = mapped_column(Text, nullable=False)
     createdAt: Mapped[datetime] = mapped_column(
         "created_at",
@@ -287,6 +288,7 @@ class Project(Base):
     url: Mapped[str] = mapped_column(String, nullable=False)
     githubUrl: Mapped[Optional[str]] = mapped_column("github_url", String, nullable=True)
     image: Mapped[str] = mapped_column(String, nullable=False)
+    image_data: Mapped[Optional[str]] = mapped_column("image_data", Text, nullable=True)
     tags: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     techStack: Mapped[list] = mapped_column("tech_stack", JSON, nullable=False, default=list)
     stats: Mapped[list] = mapped_column(JSON, nullable=False, default=list)

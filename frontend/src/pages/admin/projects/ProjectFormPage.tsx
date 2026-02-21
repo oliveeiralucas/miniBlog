@@ -18,6 +18,7 @@ import {
 
 import { projectsApi } from '@/api/apiClient'
 import type { ProjectCreatePayload, StatItem, TechStackItem } from '@/api/types'
+import ImageAiGenerator from '@/components/ImageAiGenerator'
 import TagInput from '@/components/TagInput'
 
 const CATEGORIES = ['web-app', 'corporate', 'saas', 'analytics', 'tool', 'other']
@@ -36,6 +37,7 @@ const ProjectFormPage: React.FC = () => {
   const [url, setUrl] = useState('')
   const [githubUrl, setGithubUrl] = useState('')
   const [image, setImage] = useState('')
+  const [imageData, setImageData] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [techStack, setTechStack] = useState<TechStackItem[]>([])
   const [techInput, setTechInput] = useState('')
@@ -63,7 +65,8 @@ const ProjectFormPage: React.FC = () => {
         setCategory(project.category)
         setUrl(project.url)
         setGithubUrl(project.githubUrl ?? '')
-        setImage(project.image)
+        setImage(project.image ?? '')
+        setImageData(project.image_data ?? '')
         setTags(project.tags)
         setTechStack(project.techStack as TechStackItem[])
         setStats(project.stats as StatItem[])
@@ -128,8 +131,13 @@ const ProjectFormPage: React.FC = () => {
     e.preventDefault()
     setError('')
 
-    if (!title.trim() || !slug.trim() || !url.trim() || !image.trim()) {
-      setError('Preencha todos os campos obrigatórios (título, slug, URL e imagem).')
+    if (!title.trim() || !slug.trim() || !url.trim()) {
+      setError('Preencha todos os campos obrigatórios (título, slug e URL).')
+      return
+    }
+
+    if (!imageData && !image.trim()) {
+      setError('Adicione uma URL de imagem ou gere uma imagem com IA.')
       return
     }
 
@@ -143,7 +151,8 @@ const ProjectFormPage: React.FC = () => {
         category,
         url,
         githubUrl: githubUrl.trim() || undefined,
-        image,
+        image: image.trim(),
+        image_data: imageData || undefined,
         tags,
         techStack,
         stats: stats.filter((s) => s.label && s.value),
@@ -318,14 +327,25 @@ const ProjectFormPage: React.FC = () => {
               className="input-ed"
               type="url"
               value={image}
-              onChange={(e) => setImage(e.target.value)}
+              onChange={(e) => {
+                setImage(e.target.value)
+                if (e.target.value) setImageData('')
+              }}
               placeholder="https://..."
-              required
             />
-            {image && (
-              <div className="mt-2 overflow-hidden rounded-sm border border-ed-border aspect-video bg-ed-elevated">
+
+            <ImageAiGenerator
+              formFields={{ title, body: description, tags, category }}
+              onImageGenerated={(b64) => {
+                setImageData(b64)
+                setImage('')
+              }}
+            />
+
+            {(imageData || image) && (
+              <div className="mt-3 overflow-hidden rounded-sm border border-ed-border aspect-video bg-ed-elevated">
                 <img
-                  src={image}
+                  src={imageData ? `data:image/png;base64,${imageData}` : image}
                   alt="Preview"
                   className="w-full h-full object-cover"
                   onError={(e) => {

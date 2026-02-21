@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BiImageAlt, BiText, BiTag, BiHeading } from 'react-icons/bi'
 
+import ImageAiGenerator from '@/components/ImageAiGenerator'
 import TagInput from '@/components/TagInput'
 import { useAuthValue } from '@/context/AuthContext'
 import { useInsertDocument } from '@/hooks/useInsertDocument'
@@ -9,6 +10,7 @@ import { useInsertDocument } from '@/hooks/useInsertDocument'
 const FormCreatePost: React.FC = () => {
   const [title, setTitle] = useState('')
   const [image, setImage] = useState('')
+  const [imageData, setImageData] = useState('')
   const [body, setBody] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [formError, setFormError] = useState('')
@@ -19,19 +21,29 @@ const FormCreatePost: React.FC = () => {
 
   const { insertDocument, response } = useInsertDocument('posts')
 
+  const previewSrc = imageData
+    ? `data:image/png;base64,${imageData}`
+    : image || ''
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setFormError('')
 
-    // Validate URL
-    try {
-      new URL(image)
-    } catch {
-      setFormError('A imagem precisa ser uma URL válida.')
+    if (!imageData && !image.trim()) {
+      setFormError('Adicione uma URL de imagem ou gere uma imagem com IA.')
       return
     }
 
-    if (!title.trim() || !image.trim() || tags.length === 0 || !body.trim()) {
+    if (!imageData && image.trim()) {
+      try {
+        new URL(image)
+      } catch {
+        setFormError('A imagem precisa ser uma URL válida.')
+        return
+      }
+    }
+
+    if (!title.trim() || tags.length === 0 || !body.trim()) {
       setFormError('Por favor preencha todos os campos.')
       return
     }
@@ -39,6 +51,7 @@ const FormCreatePost: React.FC = () => {
     const ok = await insertDocument({
       title: title.trim(),
       image: image.trim(),
+      image_data: imageData || undefined,
       body: body.trim(),
       tags,
       uid: user?.uid,
@@ -66,7 +79,7 @@ const FormCreatePost: React.FC = () => {
         />
       </div>
 
-      {/* Image URL */}
+      {/* Image URL + AI Generator */}
       <div>
         <label className="section-label flex items-center gap-1.5 mb-2">
           <BiImageAlt className="text-ed-accent text-sm" />
@@ -76,14 +89,25 @@ const FormCreatePost: React.FC = () => {
           type="text"
           placeholder="https://exemplo.com/imagem.jpg"
           value={image}
-          onChange={(e) => setImage(e.target.value)}
-          required
+          onChange={(e) => {
+            setImage(e.target.value)
+            if (e.target.value) setImageData('')
+          }}
           className="input-ed"
         />
-        {image && (
-          <div className="mt-2 overflow-hidden rounded-sm border border-ed-border aspect-video">
+
+        <ImageAiGenerator
+          formFields={{ title, body, tags }}
+          onImageGenerated={(b64) => {
+            setImageData(b64)
+            setImage('')
+          }}
+        />
+
+        {previewSrc && (
+          <div className="mt-3 overflow-hidden rounded-sm border border-ed-border aspect-video">
             <img
-              src={image}
+              src={previewSrc}
               alt="Preview"
               className="w-full h-full object-cover"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}

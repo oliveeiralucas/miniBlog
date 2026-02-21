@@ -1,13 +1,20 @@
 from datetime import datetime
 
-from pydantic import BaseModel, HttpUrl, field_validator
+from pydantic import BaseModel, HttpUrl, field_validator, model_validator
 
 
 class PostCreate(BaseModel):
     title: str
-    image: HttpUrl
+    image: HttpUrl | None = None
+    image_data: str | None = None
     body: str
     tags: list[str]
+
+    @model_validator(mode="after")
+    def check_image_source(self) -> "PostCreate":
+        if not self.image and not self.image_data:
+            raise ValueError("Either 'image' (URL) or 'image_data' (base64) must be provided")
+        return self
 
     @field_validator("title")
     @classmethod
@@ -37,6 +44,7 @@ class PostCreate(BaseModel):
 class PostUpdate(BaseModel):
     title: str | None = None
     image: HttpUrl | None = None
+    image_data: str | None = None
     body: str | None = None
     tags: list[str] | None = None
 
@@ -70,6 +78,7 @@ class PostResponse(BaseModel):
     id: str
     title: str
     image: str
+    image_data: str | None = None
     body: str
     tags: list[str]
     uid: str           # = authorId

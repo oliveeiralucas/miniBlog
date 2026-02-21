@@ -17,6 +17,7 @@ def _to_response(project: Project) -> ProjectResponse:
         url=project.url,
         githubUrl=project.githubUrl,
         image=project.image,
+        image_data=project.image_data,
         tags=project.tags or [],
         techStack=project.techStack or [],
         stats=project.stats or [],

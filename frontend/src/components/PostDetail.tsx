@@ -6,6 +6,7 @@ interface Post {
   id: string
   title: string
   image: string
+  image_data?: string
   createdBy: string
   tags: string[]
   body: string
@@ -22,7 +23,7 @@ const PostDetail: React.FC<Props> = ({ post }) => {
         {/* Image */}
         <div className="overflow-hidden aspect-video bg-ed-elevated">
           <img
-            src={post.image}
+            src={post.image_data ? `data:image/png;base64,${post.image_data}` : post.image}
             alt={post.title}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             onError={(e) => {

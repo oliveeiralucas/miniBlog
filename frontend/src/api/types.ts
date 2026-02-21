@@ -34,6 +34,7 @@ export interface ApiPost {
   id: string
   title: string
   image: string
+  image_data?: string
   body: string
   tags: string[]
   /** author's user ID — mapped to `uid` for backwards compatibility */
@@ -49,6 +50,7 @@ export interface ApiPost {
 export interface PostCreatePayload {
   title: string
   image: string
+  image_data?: string
   body: string
   tags: string[]
 }
@@ -56,6 +58,7 @@ export interface PostCreatePayload {
 export interface PostUpdatePayload {
   title?: string
   image?: string
+  image_data?: string
   body?: string
   tags?: string[]
 }
@@ -118,6 +121,7 @@ export interface ApiProject {
   url: string
   githubUrl: string | null
   image: string
+  image_data?: string
   tags: string[]
   techStack: TechStackItem[]
   stats: StatItem[]
@@ -137,6 +141,7 @@ export interface ProjectCreatePayload {
   url: string
   githubUrl?: string
   image: string
+  image_data?: string
   tags: string[]
   techStack: TechStackItem[]
   stats: StatItem[]
@@ -154,6 +159,7 @@ export interface ProjectUpdatePayload {
   url?: string
   githubUrl?: string | null
   image?: string
+  image_data?: string
   tags?: string[]
   techStack?: TechStackItem[]
   stats?: StatItem[]
@@ -168,6 +174,27 @@ export interface PaginatedProjects {
   page: number
   size: number
   pages: number
+}
+
+// ─── Image AI ─────────────────────────────────────────────────────────────────
+
+export interface GeneratePromptPayload {
+  title: string
+  body: string
+  tags: string[]
+  category?: string
+}
+
+export interface GeneratePromptResponse {
+  prompt: string
+}
+
+export interface GenerateImagePayload {
+  prompt: string
+}
+
+export interface GenerateImageResponse {
+  image_data: string
 }
 
 // ─── Errors ───────────────────────────────────────────────────────────────────

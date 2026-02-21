@@ -13,6 +13,7 @@ def _to_response(post: object, *, current_user_id: str | None = None) -> PostRes
         id=post.id,  # type: ignore[attr-defined]
         title=post.title,  # type: ignore[attr-defined]
         image=post.image,  # type: ignore[attr-defined]
+        image_data=post.image_data,  # type: ignore[attr-defined]
         body=post.body,  # type: ignore[attr-defined]
         tags=tags,
         uid=post.authorId,  # type: ignore[attr-defined]
@@ -71,7 +72,8 @@ class PostService:
     async def create_post(self, data: PostCreate, *, author: object) -> PostResponse:
         post = await self._posts.create(
             title=data.title,
-            image=str(data.image),
+            image=str(data.image) if data.image else "",
+            image_data=data.image_data,
             body=data.body,
             tags=data.tags,
             author_id=author.id,  # type: ignore[attr-defined]
@@ -95,6 +97,7 @@ class PostService:
             post_id,
             title=data.title,
             image=str(data.image) if data.image else None,
+            image_data=data.image_data,
             body=data.body,
             tags=data.tags,
         )

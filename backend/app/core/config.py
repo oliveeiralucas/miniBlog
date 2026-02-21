@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     # Password hashing
     BCRYPT_ROUNDS: int = 12
 
+    # Google Gemini (AI Studio)
+    GEMINI_API_KEY: str = ""
+    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_IMAGE_MODEL: str = "gemini-2.5-flash-image"
+
     # Logging
     LOG_LEVEL: str = "INFO"
     LOG_FORMAT: str = "console"  # "console" | "json"

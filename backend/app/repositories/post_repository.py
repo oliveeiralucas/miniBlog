@@ -78,11 +78,12 @@ class PostRepository:
         *,
         title: str,
         image: str,
+        image_data: str | None = None,
         body: str,
         tags: list[str],
         author_id: str,
     ) -> Post:
-        post = Post(title=title, image=image, body=body, authorId=author_id)
+        post = Post(title=title, image=image, image_data=image_data, body=body, authorId=author_id)
         self._session.add(post)
         await self._session.flush()  # get post.id before creating PostTags
 
@@ -99,6 +100,7 @@ class PostRepository:
         *,
         title: str | None = None,
         image: str | None = None,
+        image_data: str | None = None,
         body: str | None = None,
         tags: list[str] | None = None,
     ) -> Post:
@@ -107,6 +109,8 @@ class PostRepository:
             update_vals["title"] = title
         if image is not None:
             update_vals["image"] = image
+        if image_data is not None:
+            update_vals["image_data"] = image_data
         if body is not None:
             update_vals["body"] = body
 

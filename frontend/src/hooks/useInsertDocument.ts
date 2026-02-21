@@ -47,6 +47,7 @@ export const useInsertDocument = (_docCollection: string) => {
       await postsApi.create({
         title: document.title,
         image: document.image,
+        image_data: document.image_data,
         body: document.body,
         tags: document.tags,
       })

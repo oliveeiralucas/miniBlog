@@ -124,11 +124,11 @@ const Post: React.FC = () => {
       </div>
 
       {/* Featured image */}
-      {post.image && (
+      {(post.image_data || post.image) && (
         <div className="border-b border-ed-border">
           <div className="page-wrapper py-6 max-w-3xl">
             <img
-              src={post.image}
+              src={post.image_data ? `data:image/png;base64,${post.image_data}` : post.image}
               alt={post.title}
               className="w-full rounded-sm border border-ed-border"
               onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }}

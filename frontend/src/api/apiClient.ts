@@ -4,6 +4,10 @@ import type {
   ApiProject,
   ApiTag,
   CommentCreatePayload,
+  GenerateImagePayload,
+  GenerateImageResponse,
+  GeneratePromptPayload,
+  GeneratePromptResponse,
   LoginPayload,
   PaginatedPosts,
   PaginatedProjects,
@@ -220,4 +224,20 @@ export const projectsApi = {
 
   delete: (id: string): Promise<void> =>
     request<void>(`/projects/${id}`, { method: 'DELETE' }),
+}
+
+// ─── Image AI endpoints ───────────────────────────────────────────────────────
+
+export const imageAiApi = {
+  generatePrompt: (payload: GeneratePromptPayload): Promise<GeneratePromptResponse> =>
+    request<GeneratePromptResponse>('/image-ai/generate-prompt', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
+
+  generateImage: (payload: GenerateImagePayload): Promise<GenerateImageResponse> =>
+    request<GenerateImageResponse>('/image-ai/generate-image', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    }),
 }
